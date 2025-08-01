@@ -70,6 +70,94 @@ def logout():
 def index():
     return render_template('index.html', domain=DOMAIN, username=current_user.username)
 
+@app.route('/api/email-accounts', methods=['GET'])
+@login_required
+def get_email_accounts():
+    """Get all email accounts from DirectAdmin"""
+    try:
+        # First, get all email accounts for the domain
+        response = requests.post(
+            f"{DIRECTADMIN_URL}/CMD_API_POP",
+            auth=HTTPBasicAuth(DIRECTADMIN_USER, DIRECTADMIN_PASS),
+            data={
+                'domain': DOMAIN,
+                'action': 'list'
+            },
+            verify=False
+        )
+
+        email_accounts = []
+
+        if response.status_code == 200:
+            raw_response = response.text.strip()
+            print(f"DEBUG: Email accounts raw response: {raw_response}")
+
+            if raw_response and 'error=' not in raw_response:
+                # DirectAdmin returns list in format: account1&account2&account3
+                decoded_response = unquote(raw_response)
+
+                # Handle different possible formats
+                if 'list[]=' in decoded_response:
+                    # Format: list[]=account1&list[]=account2
+                    import re
+                    accounts = re.findall(r'list\[\]=([^&]+)', decoded_response)
+                else:
+                    # Simple format: account1&account2&account3
+                    accounts = decoded_response.split('&')
+
+                for account in accounts:
+                    account = account.strip()
+                    if account and account != 'error=0':
+                        # Filter out accounts containing the DirectAdmin username
+                        if DIRECTADMIN_USER.lower() not in account.lower():
+                            email_accounts.append(f"{account}@{DOMAIN}")
+
+        # Also try to get aliases/forwarders that might be destinations
+        try:
+            alias_response = requests.post(
+                f"{DIRECTADMIN_URL}/CMD_API_EMAIL_FORWARDERS",
+                auth=HTTPBasicAuth(DIRECTADMIN_USER, DIRECTADMIN_PASS),
+                data={'domain': DOMAIN},
+                verify=False
+            )
+
+            if alias_response.status_code == 200:
+                raw = alias_response.text.strip()
+                if raw and 'error=' not in raw:
+                    decoded = unquote(raw)
+                    entries = decoded.split('&')
+
+                    for entry in entries:
+                        if '=' in entry and not entry.startswith('error='):
+                            parts = entry.split('=', 1)
+                            if len(parts) == 2:
+                                destinations = parts[1].strip()
+                                # Add unique destination emails
+                                if ',' in destinations:
+                                    for dest in destinations.split(','):
+                                        dest = dest.strip()
+                                        if '@' in dest and dest not in email_accounts:
+                                            if DIRECTADMIN_USER.lower() not in dest.lower():
+                                                email_accounts.append(dest)
+                                elif '@' in destinations and destinations not in email_accounts:
+                                    if DIRECTADMIN_USER.lower() not in destinations.lower():
+                                        email_accounts.append(destinations)
+        except:
+            pass  # If we can't get forwarders, just continue with email accounts
+
+        # Sort the email accounts
+        email_accounts.sort()
+
+        return jsonify({
+            'success': True, 
+            'accounts': email_accounts,
+            'count': len(email_accounts)
+        })
+
+    except Exception as e:
+        print(f"Error fetching email accounts: {str(e)}")
+        return jsonify({'success': False, 'error': str(e), 'accounts': []}), 500
+
 @app.route('/api/forwarders', methods=['GET'])
 @login_required
 def get_forwarders():
