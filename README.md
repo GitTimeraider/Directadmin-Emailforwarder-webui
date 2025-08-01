@@ -1,5 +1,9 @@
 ![](img/icon_main_25.png?"")
 
+<p align="center">
+  <img src="img/icon_main_25.png" />
+</p>
+
 # DirectAdmin Email Forwarder Manager 📧
 
 A modern web-based interface for managing email forwarders in DirectAdmin. This Docker container provides a clean, user-friendly UI with authentication to create, view, and delete email forwarders without accessing the DirectAdmin control panel directly.
