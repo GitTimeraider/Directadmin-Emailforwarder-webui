@@ -3,6 +3,7 @@ import requests
 from flask import Flask, render_template, request, jsonify
 from requests.auth import HTTPBasicAuth
 import urllib3
+from urllib.parse import unquote
 
 # Disable SSL warnings if needed (use with caution)
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -33,18 +34,44 @@ def get_forwarders():
         if response.status_code == 200:
             # Parse DirectAdmin response
             forwarders = []
-            lines = response.text.strip().split('\n')
-            for line in lines:
-                if '=' in line:
-                    alias, destinations = line.split('=', 1)
-                    forwarders.append({
-                        'alias': alias,
-                        'destinations': destinations
-                    })
+            raw_response = response.text.strip()
+
+            # DirectAdmin returns URL-encoded data separated by &
+            if raw_response and raw_response != 'error=1':
+                # Split by & to get individual forwarder entries
+                entries = raw_response.split('&')
+
+                for entry in entries:
+                    if '=' in entry and not entry.startswith('error='):
+                        # URL decode and split the entry
+                        decoded_entry = unquote(entry)
+                        parts = decoded_entry.split('=', 1)
+
+                        if len(parts) == 2:
+                            alias = parts[0]
+                            destinations = parts[1]
+
+                            # Clean up the alias (remove domain if present)
+                            if '@' in alias:
+                                alias = alias.split('@')[0]
+
+                            # Split multiple destinations if they exist
+                            if ',' in destinations:
+                                dest_list = [d.strip() for d in destinations.split(',')]
+                            else:
+                                dest_list = [destinations.strip()]
+
+                            forwarders.append({
+                                'alias': alias,
+                                'destinations': dest_list,
+                                'destinations_str': ', '.join(dest_list)
+                            })
+
             return jsonify({'success': True, 'forwarders': forwarders})
         else:
             return jsonify({'success': False, 'error': 'Failed to fetch forwarders'}), 500
     except Exception as e:
+        print(f"Error fetching forwarders: {str(e)}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/api/create-forwarder', methods=['POST'])
@@ -111,3 +138,4 @@ def delete_forwarder():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
+    
