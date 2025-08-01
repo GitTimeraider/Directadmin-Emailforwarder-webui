@@ -39,6 +39,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load and display forwarders
     async function loadForwarders() {
         try {
+            forwardersList.innerHTML = '<p class="loading">Loading forwarders...</p>';
+
             const response = await fetch('/api/forwarders');
             const data = await response.json();
 
@@ -48,33 +50,47 @@ document.addEventListener('DOMContentLoaded', function() {
                 forwardersList.innerHTML = '<p class="error">Failed to load forwarders</p>';
             }
         } catch (error) {
+            console.error('Error loading forwarders:', error);
             forwardersList.innerHTML = '<p class="error">Network error</p>';
         }
     }
 
     // Display forwarders in the list
     function displayForwarders(forwarders) {
-        if (forwarders.length === 0) {
+        if (!forwarders || forwarders.length === 0) {
             forwardersList.innerHTML = '<p>No forwarders configured yet.</p>';
             return;
         }
 
-        forwardersList.innerHTML = forwarders.map(forwarder => `
-            <div class="forwarder-item">
-                <div class="forwarder-info">
-                    <div class="forwarder-alias">${forwarder.alias}</div>
-                    <div class="forwarder-destination">→ ${forwarder.destinations}</div>
+        forwardersList.innerHTML = forwarders.map(forwarder => {
+            // Handle multiple destinations
+            const destinationsHtml = forwarder.destinations.map(dest => 
+                `<div class="forwarder-destination">→ ${dest}</div>`
+            ).join('');
+
+            return `
+                <div class="forwarder-item">
+                    <div class="forwarder-info">
+                        <div class="forwarder-alias">${forwarder.alias}@${getDomain()}</div>
+                        ${destinationsHtml}
+                    </div>
+                    <button class="btn btn-danger" onclick="deleteForwarder('${forwarder.alias}')">
+                        Delete
+                    </button>
                 </div>
-                <button class="btn btn-danger" onclick="deleteForwarder('${forwarder.alias}')">
-                    Delete
-                </button>
-            </div>
-        `).join('');
+            `;
+        }).join('');
+    }
+
+    // Get domain from environment or default
+    function getDomain() {
+        // You might want to fetch this from the backend
+        return window.DA_DOMAIN || 'your-domain.com';
     }
 
     // Delete forwarder
     window.deleteForwarder = async function(alias) {
-        if (!confirm(`Delete forwarder ${alias}?`)) return;
+        if (!confirm(`Delete forwarder ${alias}@${getDomain()}?`)) return;
 
         try {
             const response = await fetch('/api/delete-forwarder', {
