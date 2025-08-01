@@ -15,16 +15,47 @@ document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('forwarder-form');
     const messageDiv = document.getElementById('message');
     const forwardersList = document.getElementById('forwarders-list');
+    const destinationSelect = document.getElementById('destination-select');
+    const customDestinationWrapper = document.getElementById('custom-destination-wrapper');
+    const customDestinationInput = document.getElementById('custom-destination');
 
-    // Load existing forwarders on page load
+    // Load existing forwarders and email accounts on page load
     loadForwarders();
+    loadEmailAccounts();
+
+    // Handle destination select change
+    destinationSelect.addEventListener('change', function() {
+        if (this.value === 'custom') {
+            customDestinationWrapper.style.display = 'block';
+            customDestinationInput.required = true;
+            customDestinationInput.focus();
+        } else {
+            customDestinationWrapper.style.display = 'none';
+            customDestinationInput.required = false;
+            customDestinationInput.value = '';
+        }
+    });
 
     // Handle form submission
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
 
         const alias = document.getElementById('alias').value;
-        const destination = document.getElementById('destination').value;
+        let destination = destinationSelect.value;
+
+        // If custom is selected, use the custom input value
+        if (destination === 'custom') {
+            destination = customDestinationInput.value;
+            if (!destination) {
+                showMessage('Please enter a custom email address', 'error');
+                return;
+            }
+        }
+
+        if (!destination) {
+            showMessage('Please select a destination email', 'error');
+            return;
+        }
 
         try {
             const response = await makeAuthenticatedRequest('/api/create-forwarder', {
@@ -42,7 +73,9 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.success) {
                 showMessage(data.message, 'success');
                 form.reset();
+                customDestinationWrapper.style.display = 'none';
                 loadForwarders(); // Reload the list
+                loadEmailAccounts(); // Reload email accounts
             } else {
                 showMessage(data.error || 'Failed to create forwarder', 'error');
             }
@@ -50,6 +83,67 @@ document.addEventListener('DOMContentLoaded', function() {
             showMessage('Network error: ' + error.message, 'error');
         }
     });
+
+    // Load email accounts for the dropdown
+    async function loadEmailAccounts() {
+        try {
+            const response = await makeAuthenticatedRequest('/api/email-accounts');
+            if (!response) return;
+
+            const data = await response.json();
+
+            if (data.success) {
+                populateDestinationSelect(data.accounts);
+            } else {
+                console.error('Failed to load email accounts');
+                // Fallback to just custom option
+                populateDestinationSelect([]);
+            }
+        } catch (error) {
+            console.error('Error loading email accounts:', error);
+            populateDestinationSelect([]);
+        }
+    }
+
+    // Populate the destination select dropdown
+    function populateDestinationSelect(accounts) {
+        destinationSelect.innerHTML = '';
+
+        // Add default option
+        const defaultOption = document.createElement('option');
+        defaultOption.value = '';
+        defaultOption.textContent = '-- Select destination email --';
+        destinationSelect.appendChild(defaultOption);
+
+        // Add email accounts
+        if (accounts && accounts.length > 0) {
+            const accountsGroup = document.createElement('optgroup');
+            accountsGroup.label = 'Existing Email Accounts';
+
+            accounts.forEach(account => {
+                const option = document.createElement('option');
+                option.value = account;
+                option.textContent = account;
+                accountsGroup.appendChild(option);
+            });
+
+            destinationSelect.appendChild(accountsGroup);
+        }
+
+        // Add separator
+        if (accounts && accounts.length > 0) {
+            const separator = document.createElement('option');
+            separator.disabled = true;
+            separator.textContent = '────────────────';
+            destinationSelect.appendChild(separator);
+        }
+
+        // Add custom option
+        const customOption = document.createElement('option');
+        customOption.value = 'custom';
+        customOption.textContent = '✏️ Enter custom email address...';
+        destinationSelect.appendChild(customOption);
+    }
 
     // Load and display forwarders
     async function loadForwarders() {
