@@ -8,7 +8,14 @@
 </head>
 <body>
     <div class="container">
-        <h1>📧 Email Forwarder Manager</h1>
+        <div class="header-bar">
+            <h1>📧 Email Forwarder Manager</h1>
+            <div class="user-info">
+                <span>Logged in as: <strong>{{ username }}</strong></span>
+                <a href="/logout" class="btn btn-logout">Logout</a>
+            </div>
+        </div>
+
         <p class="domain-info">Managing forwarders for: <strong>{{ domain }}</strong></p>
 
         <div class="card">
@@ -46,7 +53,6 @@
     </div>
 
     <script>
-        // Pass domain to JavaScript
         window.DA_DOMAIN = "{{ domain }}";
     </script>
     <script src="/static/script.js"></script>
