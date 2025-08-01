@@ -3,7 +3,7 @@ import requests
 from flask import Flask, render_template, request, jsonify
 from requests.auth import HTTPBasicAuth
 import urllib3
-from urllib.parse import unquote
+from urllib.parse import unquote, parse_qs
 
 # Disable SSL warnings if needed (use with caution)
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -18,7 +18,7 @@ DOMAIN = os.environ.get('DA_DOMAIN', 'example.com')
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('index.html', domain=DOMAIN)
 
 @app.route('/api/forwarders', methods=['GET'])
 def get_forwarders():
@@ -32,47 +32,89 @@ def get_forwarders():
         )
 
         if response.status_code == 200:
-            # Parse DirectAdmin response
             forwarders = []
             raw_response = response.text.strip()
 
-            # DirectAdmin returns URL-encoded data separated by &
-            if raw_response and raw_response != 'error=1':
-                # Split by & to get individual forwarder entries
-                entries = raw_response.split('&')
+            print(f"DEBUG: Raw response: {raw_response}")  # Debug line
 
-                for entry in entries:
-                    if '=' in entry and not entry.startswith('error='):
-                        # URL decode and split the entry
-                        decoded_entry = unquote(entry)
-                        parts = decoded_entry.split('=', 1)
+            # Check if there's an error or no forwarders
+            if not raw_response or raw_response == 'error=1' or raw_response == '':
+                return jsonify({'success': True, 'forwarders': []})
 
-                        if len(parts) == 2:
-                            alias = parts[0]
-                            destinations = parts[1]
+            # DirectAdmin returns data in format: alias1=dest1&alias2=dest2&...
+            # First, let's URL decode the entire response
+            decoded_response = unquote(raw_response)
 
-                            # Clean up the alias (remove domain if present)
-                            if '@' in alias:
-                                alias = alias.split('@')[0]
+            # Split by & to get individual entries
+            entries = decoded_response.split('&')
 
-                            # Split multiple destinations if they exist
-                            if ',' in destinations:
-                                dest_list = [d.strip() for d in destinations.split(',')]
-                            else:
-                                dest_list = [destinations.strip()]
+            for entry in entries:
+                if '=' in entry and not entry.startswith('error='):
+                    # Split only on the first = to handle emails with = in them
+                    parts = entry.split('=', 1)
 
+                    if len(parts) == 2:
+                        alias = parts[0].strip()
+                        destinations = parts[1].strip()
+
+                        # Remove domain from alias if it's included
+                        if '@' in alias:
+                            alias = alias.split('@')[0]
+
+                        # Handle multiple destinations (comma-separated)
+                        if ',' in destinations:
+                            dest_list = [d.strip() for d in destinations.split(',')]
+                        else:
+                            dest_list = [destinations]
+
+                        # Only add valid entries
+                        if alias and destinations:
                             forwarders.append({
                                 'alias': alias,
                                 'destinations': dest_list,
                                 'destinations_str': ', '.join(dest_list)
                             })
 
+            print(f"DEBUG: Parsed forwarders: {forwarders}")  # Debug line
+
             return jsonify({'success': True, 'forwarders': forwarders})
         else:
-            return jsonify({'success': False, 'error': 'Failed to fetch forwarders'}), 500
+            return jsonify({'success': False, 'error': f'HTTP {response.status_code}'}), 500
     except Exception as e:
         print(f"Error fetching forwarders: {str(e)}")
         return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/debug-forwarders', methods=['GET'])
+def debug_forwarders():
+    """Debug endpoint to see raw API response"""
+    try:
+        response = requests.post(
+            f"{DIRECTADMIN_URL}/CMD_API_EMAIL_FORWARDERS",
+            auth=HTTPBasicAuth(DIRECTADMIN_USER, DIRECTADMIN_PASS),
+            data={'domain': DOMAIN},
+            verify=False
+        )
+
+        # Try to parse it
+        forwarders = []
+        raw = response.text.strip()
+        decoded = unquote(raw)
+
+        if decoded and decoded != 'error=1':
+            entries = decoded.split('&')
+            for entry in entries:
+                if '=' in entry and not entry.startswith('error='):
+                    forwarders.append(entry)
+
+        return jsonify({
+            'status_code': response.status_code,
+            'raw_response': raw,
+            'decoded_response': decoded,
+            'split_entries': forwarders,
+            'headers': dict(response.headers)
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/api/create-forwarder', methods=['POST'])
 def create_forwarder():
@@ -95,7 +137,7 @@ def create_forwarder():
                 'user': alias,
                 'email': destination
             },
-            verify=False  # Set to True in production with proper SSL
+            verify=False
         )
 
         if response.status_code == 200 and 'error=0' in response.text:
