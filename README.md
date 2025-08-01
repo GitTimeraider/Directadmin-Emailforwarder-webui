@@ -1,4 +1,4 @@
-![Alt text](img/icon_main.jpg?raw=true "Title")
+![Alt text](img/icon_main.png?raw=true "Title")
 
 # DirectAdmin Email Forwarder Manager 📧
 
