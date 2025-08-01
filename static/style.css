@@ -235,3 +235,109 @@ pre {
     margin-top: 10px;
 }
 
+/* Add to existing CSS */
+
+/* Login page styles */
+.login-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 20px;
+}
+
+.login-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    width: 100%;
+    max-width: 400px;
+    overflow: hidden;
+}
+
+.login-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 30px;
+    text-align: center;
+}
+
+.login-header h1 {
+    margin: 0 0 10px 0;
+    font-size: 28px;
+}
+
+.login-header p {
+    margin: 0;
+    opacity: 0.9;
+}
+
+.login-form {
+    padding: 30px;
+}
+
+.alert {
+    padding: 12px 16px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+
+.alert-error {
+    background: #fee;
+    color: #c33;
+    border: 1px solid #fcc;
+}
+
+.alert-info {
+    background: #e7f3ff;
+    color: #31708f;
+    border: 1px solid #bce8f1;
+}
+
+.btn-block {
+    width: 100%;
+    margin-top: 10px;
+}
+
+.login-footer {
+    padding: 20px;
+    text-align: center;
+    background: #f8f9fa;
+    color: #666;
+    font-size: 14px;
+    font-style: italic;
+}
+
+/* Header bar with user info */
+.header-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.header-bar h1 {
+    margin: 0;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    color: white;
+    font-size: 14px;
+}
+
+.btn-logout {
+    background: rgba(255,255,255,0.2);
+    color: white;
+    padding: 8px 16px;
+    font-size: 14px;
+    border: 1px solid rgba(255,255,255,0.3);
+}
+
+.btn-logout:hover {
+    background: rgba(255,255,255,0.3);
+}
