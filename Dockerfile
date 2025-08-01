@@ -37,4 +37,4 @@ RUN chown -R root:root /app && \
 EXPOSE 5000
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
-CMD ["python", "app.py"]
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "2", "--threads", "4", "--worker-class", "gthread", "app:app"]
