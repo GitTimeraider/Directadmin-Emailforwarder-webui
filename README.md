@@ -13,7 +13,7 @@ version: '3.8'
 services:
   email-forwarder-ui:
     image: ghcr.io/gittimeraider/directadmin-emailforwarder:latest
-    container_name: email-forwarder-ui
+    container_name: directadmin-mailfw
     ports:
       - "5000:5000"
     environment:
