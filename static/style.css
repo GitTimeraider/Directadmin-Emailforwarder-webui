@@ -199,3 +199,39 @@ input:focus {
 .forwarder-item:hover {
     background-color: #f1f5f9;
 }
+
+/* Add to existing CSS */
+
+.domain-info {
+    text-align: center;
+    color: white;
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+
+.debug-info {
+    margin-bottom: 15px;
+    text-align: right;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+    font-size: 12px;
+    padding: 8px 16px;
+}
+
+.btn-secondary:hover {
+    background: #5a6268;
+}
+
+/* Debug response display */
+pre {
+    background: #f4f4f4;
+    padding: 15px;
+    border-radius: 6px;
+    overflow-x: auto;
+    font-size: 12px;
+    margin-top: 10px;
+}
+
