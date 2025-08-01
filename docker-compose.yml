@@ -1,20 +1,22 @@
 version: '3.8'
 
-version: '3.8'
-
 services:
   email-forwarder-ui:
-    image: ghcr.io/GitTimeraider/Directadmin-Emailforwarder-webui:latest
+    build: .
     container_name: email-forwarder-ui
     ports:
       - "5000:5000"
     environment:
-      # User/Group IDs - match your host user
-      - PUID=${PUID:-1000}
-      - PGID=${PGID:-1000}
+      # User/Group IDs
+      - PUID=1000
+      - PGID=1000
+      # Web UI Authentication
+      - WEB_USERNAME=admin
+      - WEB_PASSWORD=SecurePassword123!
+      - SECRET_KEY=your-very-secret-key-change-this
       # DirectAdmin Configuration
-      - DA_URL=${DA_URL:-https://your-directadmin-server.com:2222}
-      - DA_USER=${DA_USER:-your_admin_user}
-      - DA_PASS=${DA_PASS:-your_admin_password}
-      - DA_DOMAIN=${DA_DOMAIN:-your-domain.com}
+      - DA_URL=https://your-directadmin-server.com:2222
+      - DA_USER=your_admin_user
+      - DA_PASS=your_admin_password
+      - DA_DOMAIN=your-domain.com
     restart: unless-stopped
