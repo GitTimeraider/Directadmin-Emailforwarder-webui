@@ -26,17 +26,17 @@ services:
     image: ghcr.io/gittimeraider/directadmin-emailforwarder:latest
     container_name: directadmin-mailfw
     ports:
-- 5000:5000
+      - 5000:5000
     environment:
-- PUID=1000
-- PGID=1000
-- WEB_USERNAME=admin
-- WEB_PASSWORD=ChangeThisPassword123!
-- SECRET_KEY=your-secret-key-here
-- DA_URL=https://your-directadmin-server.com:2222
-- DA_USER=your_directadmin_username
-- DA_PASS=your_directadmin_password
-- DA_DOMAIN=your-domain.com
+      - PUID=1000
+      - PGID=1000
+      - WEB_USERNAME=admin
+      - WEB_PASSWORD=ChangeThisPassword123!
+      - SECRET_KEY=your-secret-key-here
+      - DA_URL=https://your-directadmin-server.com:2222
+      - DA_USER=your_directadmin_username
+      - DA_PASS=your_directadmin_password
+      - DA_DOMAIN=your-domain.com
     restart: unless-stopped
 ```
 
@@ -45,13 +45,13 @@ services:
 docker-compose up -d
 ```
 
-3. Access the web interface at `http://localhost:5000`
+3. Access the web interface at `http://localhost:PORTNUMBER`
 
 ### Using Docker Run
 
 ```bash
 docker run -d \
-  --name email-forwarder \
+  --name directadmin-mailfw \
   -p 5000:5000 \
   -e PUID=$(id -u) \
   -e PGID=$(id -g) \
@@ -84,44 +84,10 @@ docker run -d \
 
 *\* Should be changed from defaults for security*
 
-### Using an Environment File
-
-For better security, create a `.env` file:
-
-```bash
-# .env file
-PUID=1000
-PGID=1000
-WEB_USERNAME=admin
-WEB_PASSWORD=VerySecurePassword123!
-SECRET_KEY=your-generated-secret-key-here
-DA_URL=https://your-directadmin-server.com:2222
-DA_USER=your_directadmin_username
-DA_PASS=your_directadmin_password
-DA_DOMAIN=your-domain.com
-```
-
-Then reference it in your `docker-compose.yml`:
-
-```yaml
-version: &#x27;3.8&#x27;
-
-services:
-  email-forwarder-ui:
-    image: ghcr.io/gittimeraider/directadmin-emailforwarder:latest
-    container_name: email-forwarder-ui
-    ports:
-
-- &quot;5000:5000&quot;
-    env_file:
-
-- .env
-    restart: unless-stopped
-```
 
 ## 🔒 Security Considerations
 
-1. **Generate a secure SECRET_KEY**:
+1. **Generate a secure SECRET_KEY instead of making one up**:
 ```bash
 python3 -c &quot;import secrets; print(secrets.token_hex(32))&quot;
 ```
@@ -130,14 +96,14 @@ python3 -c &quot;import secrets; print(secrets.token_hex(32))&quot;
 
 3. **Enable HTTPS** in production using a reverse proxy (nginx, Traefik, etc.)
 
-4. **Firewall rules** - Only expose port 5000 to trusted networks
+4. **Firewall rules** - Only expose the port  to trusted networks
 
 5. **Keep the image updated** for security patches
 
 ## 📝 Usage
 
 ### Login
-Navigate to `http://your-server:5000` and login with your configured credentials.
+Navigate to `http://your-server:PORT` and login with your configured credentials.
 
 ### Creating a Forwarder
 1. Enter an alias (e.g., "info", "support", "sales")
@@ -167,23 +133,6 @@ cd directadmin-emailforwarder
 docker build -t directadmin-emailforwarder .
 ```
 
-## 🔄 Updating
-
-To update to the latest version:
-
-```bash
-docker-compose pull
-docker-compose up -d
-```
-
-Or with docker run:
-```bash
-docker stop email-forwarder
-docker rm email-forwarder
-docker pull ghcr.io/gittimeraider/directadmin-emailforwarder:latest
-# Run the container again with your parameters
-```
-
 ## 🛠️ Troubleshooting
 
 ### Cannot connect to DirectAdmin
@@ -203,24 +152,6 @@ docker pull ghcr.io/gittimeraider/directadmin-emailforwarder:latest
 ## 📄 License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## 🐛 Bug Reports
-
-If you discover any bugs, please create an issue [here](https://github.com/gittimeraider/directadmin-emailforwarder/issues) with:
-- Your configuration (without passwords)
-- Steps to reproduce
-- Expected vs actual behavior
-- Container logs if applicable
 
 ## 🎩 Acknowledgments
 
