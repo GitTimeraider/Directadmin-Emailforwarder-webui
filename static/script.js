@@ -12,6 +12,7 @@ async function makeAuthenticatedRequest(url, options = {}) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+    const REFRESH_INTERVAL = 60000; // 60 seconds in milliseconds
     const form = document.getElementById('forwarder-form');
     const messageDiv = document.getElementById('message');
     const forwardersList = document.getElementById('forwarders-list');
@@ -239,7 +240,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Auto-refresh forwarders every 30 seconds
     setInterval(() => {
         loadForwarders();
-    }, 30000);
+    }, REFRESH_INTERVAL);
 
     // Handle session timeout gracefully
     document.addEventListener('click', function(e) {
