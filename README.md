@@ -1,12 +1,13 @@
 # Directadmin-Emailforwarder
 An webui made for Docker to connect to the Directadmin API and either add or remove Forwarders (mostly used for aliases) in the Email Manager.
 
-# Features: 
+## Features: 
 - Login page
 - Option to either add or remove forwarders
 - List of currently existing forwarders
 
-
+## Docker compose example
+```sh
 version: '3.8'
 
 services:
@@ -26,3 +27,4 @@ services:
       - DA_PASS=your_directadmin_password
       - DA_DOMAIN=your-domain.com
     restart: unless-stopped
+```
