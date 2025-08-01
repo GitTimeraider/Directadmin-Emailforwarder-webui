@@ -12,7 +12,7 @@ A modern web-based interface for managing email forwarders in DirectAdmin. This 
 - **📬 Email Forwarder Management** - Create, view, and delete email forwarders
 - **📋 Smart Destination Selection** - Choose from existing email accounts or enter custom addresses
 - **🎨 Modern UI** - Clean, responsive design that works on desktop and mobile
-- **🔄 Auto-refresh** - Forwarder list updates automatically every 30 seconds
+- **🔄 Auto-refresh** - Forwarder list updates automatically every 60 seconds
 - **👤 User Filtering** - Automatically filters out admin email accounts from destination options
 - **🐳 Docker Ready** - Easy deployment with Docker and Docker Compose
 - **🔧 Configurable** - All settings managed through environment variables
