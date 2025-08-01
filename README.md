@@ -1,5 +1,3 @@
-![](img/icon_main_25.png?"")
-
 <p align="center">
   <img src="img/icon_main_25.png" />
 </p>
