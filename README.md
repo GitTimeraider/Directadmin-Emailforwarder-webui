@@ -2,10 +2,6 @@
 
 A modern web-based interface for managing email forwarders in DirectAdmin. This Docker container provides a clean, user-friendly UI with authentication to create, view, and delete email forwarders without accessing the DirectAdmin control panel directly.
 
-![Docker Pulls](https://img.shields.io/docker/pulls/gittimeraider/directadmin-emailforwarder)
-![GitHub Stars](https://img.shields.io/github/stars/gittimeraider/directadmin-emailforwarder)
-![License](https://img.shields.io/github/license/gittimeraider/directadmin-emailforwarder)
-
 ## ✨ Features
 
 - **🔐 Secure Web Interface** - Protected with username/password authentication
