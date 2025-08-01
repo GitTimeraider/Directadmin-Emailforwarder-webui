@@ -9,6 +9,7 @@
 <body>
     <div class="container">
         <h1>📧 Email Forwarder Manager</h1>
+        <p class="domain-info">Managing forwarders for: <strong>{{ domain }}</strong></p>
 
         <div class="card">
             <h2>Create New Forwarder</h2>
@@ -31,6 +32,11 @@
 
         <div class="card">
             <h2>Existing Forwarders</h2>
+            <div class="debug-info">
+                <button onclick="window.location.href='/api/debug-forwarders'" class="btn btn-secondary">
+                    Debug API Response
+                </button>
+            </div>
             <div id="forwarders-list" class="forwarders-list">
                 <p class="loading">Loading forwarders...</p>
             </div>
@@ -39,6 +45,10 @@
         <div id="message" class="message"></div>
     </div>
 
+    <script>
+        // Pass domain to JavaScript
+        window.DA_DOMAIN = "{{ domain }}";
+    </script>
     <script src="/static/script.js"></script>
 </body>
 </html>
