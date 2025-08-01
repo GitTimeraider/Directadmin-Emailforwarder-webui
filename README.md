@@ -28,7 +28,7 @@ version: 3.8;
 services:
   email-forwarder-ui:
     image: ghcr.io/gittimeraider/directadmin-emailforwarder:latest
-    container_name: directadmin-mailfwd
+    container_name: da-mailforward
     ports:
       - 5000:5000
     environment:
@@ -55,7 +55,7 @@ docker-compose up -d
 
 ```bash
 docker run -d \
-  --name directadmin-mailfwd \
+  --name da-mailforward \
   -p 5000:5000 \
   -e PUID=$(id -u) \
   -e PGID=$(id -g) \
