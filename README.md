@@ -1,4 +1,4 @@
-![](img/icon_main.png?"")
+![](img/icon_main_25.png?"")
 
 # DirectAdmin Email Forwarder Manager 📧
 
