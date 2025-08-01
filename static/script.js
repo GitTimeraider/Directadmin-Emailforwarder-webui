@@ -1,3 +1,16 @@
+// Authentication-aware request wrapper
+async function makeAuthenticatedRequest(url, options = {}) {
+    const response = await fetch(url, options);
+
+    // If we get a redirect to login, the session expired
+    if (response.redirected && response.url.includes('/login')) {
+        window.location.href = '/login';
+        return null;
+    }
+
+    return response;
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('forwarder-form');
     const messageDiv = document.getElementById('message');
@@ -14,13 +27,15 @@ document.addEventListener('DOMContentLoaded', function() {
         const destination = document.getElementById('destination').value;
 
         try {
-            const response = await fetch('/api/create-forwarder', {
+            const response = await makeAuthenticatedRequest('/api/create-forwarder', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ alias, destination })
             });
+
+            if (!response) return; // Redirected to login
 
             const data = await response.json();
 
@@ -41,7 +56,9 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             forwardersList.innerHTML = '<p class="loading">Loading forwarders...</p>';
 
-            const response = await fetch('/api/forwarders');
+            const response = await makeAuthenticatedRequest('/api/forwarders');
+            if (!response) return; // Redirected to login
+
             const data = await response.json();
 
             if (data.success) {
@@ -84,7 +101,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Get domain from environment or default
     function getDomain() {
-        // You might want to fetch this from the backend
         return window.DA_DOMAIN || 'your-domain.com';
     }
 
@@ -93,13 +109,15 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!confirm(`Delete forwarder ${alias}@${getDomain()}?`)) return;
 
         try {
-            const response = await fetch('/api/delete-forwarder', {
+            const response = await makeAuthenticatedRequest('/api/delete-forwarder', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ alias })
             });
+
+            if (!response) return; // Redirected to login
 
             const data = await response.json();
 
@@ -122,5 +140,32 @@ document.addEventListener('DOMContentLoaded', function() {
         setTimeout(() => {
             messageDiv.classList.remove('show');
         }, 3000);
+    }
+
+    // Auto-refresh forwarders every 30 seconds
+    setInterval(() => {
+        loadForwarders();
+    }, 30000);
+
+    // Handle session timeout gracefully
+    document.addEventListener('click', function(e) {
+        // If clicking on debug button, also check authentication
+        if (e.target.matches('.btn-secondary')) {
+            makeAuthenticatedRequest('/api/debug-forwarders')
+                .then(response => {
+                    if (!response) {
+                        e.preventDefault();
+                        return;
+                    }
+                    // Continue with normal behavior
+                });
+        }
+    });
+});
+
+// Global error handler for unexpected logouts
+window.addEventListener('unhandledrejection', function(event) {
+    if (event.reason && event.reason.message && event.reason.message.includes('login')) {
+        window.location.href = '/login';
     }
 });
