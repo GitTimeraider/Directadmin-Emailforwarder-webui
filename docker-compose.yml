@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  email-forwarder-ui:
+    build: .
+    container_name: email-forwarder-ui
+    ports:
+      - "5000:5000"
+    environment:
+      - DA_URL=https://your-directadmin-server.com:2222
+      - DA_USER=your_admin_user
+      - DA_PASS=your_admin_password
+      - DA_DOMAIN=your-domain.com
+    restart: unless-stopped
