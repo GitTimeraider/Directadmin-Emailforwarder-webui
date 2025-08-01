@@ -89,11 +89,11 @@ docker run -d \
 *\* Should be changed from defaults for security*
 
 
-## 🔒 Security Considerations
+## 🔒 Security Considerations (Optional)
 
 1. **Generate a secure SECRET_KEY instead of making one up**:
 ```bash
-python3 -c &quot;import secrets; print(secrets.token_hex(32))&quot;
+python3 -c "import secrets; print(secrets.token_hex(32))"
 ```
 
 2. **Use strong passwords** for both web UI and DirectAdmin credentials
